@@ -1,0 +1,41 @@
+# Define a versão do formato do arquivo docker-compose
+# A versão 3 é a mais recente e suporta recursos modernos
+version: '3'
+
+# Define os serviços (containers) que serão executados
+services:
+  # Nome do serviço: nyt-scraper
+  nyt-scraper:
+    # Nome do container: desafiotecnicoone4tech-nyt-scraper
+    container_name: desafiotecnicoone4tech-nyt-scraper
+    
+    # Instruções para construir a imagem
+    build:
+      # Contexto: diretório atual (.)
+      context: .
+      # Dockerfile: usa o arquivo Dockerfile padrão
+      dockerfile: Dockerfile
+    
+    # Volumes: mapeia diretórios/arquivos do host para o container
+    volumes:
+      # Mapeia a pasta ./images do host para /app/images no container
+      # Isso permite persistir as imagens baixadas mesmo após o container ser removido
+      - ./images:/app/images
+      
+      # Mapeia o arquivo Excel do host para o container
+      # Permite que o arquivo seja acessado diretamente do host
+      - ./nytimes_results.xlsx:/app/nytimes_results.xlsx
+    
+    # Variáveis de ambiente que serão injetadas no container
+    # Podem ser sobrescritas via linha de comando ou arquivo .env
+    environment:
+      - NYT_API_KEY=${NYT_API_KEY}
+      - NYT_API_URL=${NYT_API_URL}
+      - NYT_IMAGE_BASE_URL=${NYT_IMAGE_BASE_URL}
+      - EXCEL_PATH=${EXCEL_PATH}
+      - IMAGES_DIR=${IMAGES_DIR}
+      - SEARCH_PHRASE=${SEARCH_PHRASE}
+      - CATEGORIES=${CATEGORIES}
+      - MONTHS_TO_SEARCH=${MONTHS_TO_SEARCH}
+    env_file:
+      - .env 
