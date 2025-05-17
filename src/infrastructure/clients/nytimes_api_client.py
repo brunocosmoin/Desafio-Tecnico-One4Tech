@@ -47,17 +47,6 @@ class NYTimesAPIClient:
             
         return params
 
-    def _log_api_request(self, response: requests.Response):
-        with open('nyt_api_debug.log', 'w', encoding='utf-8') as log_file:
-            log_file.write('REQUEST URL:\n')
-            log_file.write(f'{response.url}\n')
-            log_file.write('\nREQUEST HEADERS:\n')
-            log_file.write(f'{response.headers}\n')
-            log_file.write('\nRESPONSE STATUS:\n')
-            log_file.write(f'{response.status_code}\n')
-            log_file.write('\nRESPONSE BODY:\n')
-            log_file.write(response.text)
-
     def _extract_article_data(self, doc: Dict) -> Dict:
         headline = doc.get('headline', {})
         title = headline.get('main', '') if isinstance(headline, dict) else str(headline)
@@ -99,8 +88,6 @@ class NYTimesAPIClient:
         }
         response = requests.get(self.api_url, params=params, headers=headers)
         print(f"Status da resposta: {response.status_code}")
-        
-        self._log_api_request(response)
         
         if response.status_code != 200:
             print(f"Erro na requisicao: {response.text}")

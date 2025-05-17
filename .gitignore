@@ -35,6 +35,7 @@ ENV/
 images/
 nytimes_results.xlsx
 .env
+*.log
 
 # Docker
 .docker/ 
