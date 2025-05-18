@@ -1,13 +1,13 @@
 # Extrator de Notícias
 
-Automação para extração, análise e armazenamento de notícias via API oficial, seguindo princípios de SOLID, Clean Architecture e Object Calisthenics.
+Automação para extração, análise e armazenamento de notícias, seguindo princípios de SOLID, Clean Architecture, Object Calisthenics e REFramework.
 
 ---
 
 ## 📋 Sobre o Projeto
 
 Este projeto realiza:
-- Busca automatizada de notícias via API oficial
+- Busca automatizada de notícias
 - Filtro por frase de pesquisa, categorias e período
 - Análise de ocorrência da frase e detecção de valores monetários
 - Download das imagens das notícias
@@ -20,11 +20,11 @@ Tudo isso de forma configurável via `.env` e com arquitetura robusta para manut
 ## 📚 Sobre o Desafio
 
 Este projeto foi desenvolvido como parte de um desafio técnico, com os seguintes requisitos:
-- Buscar notícias via API
+- Buscar notícias
 - Filtrar por frase, categoria e período
 - Salvar resultados em Excel
 - Baixar imagens das notícias
-- Usar Docker, WSL2 e boas práticas de arquitetura
+- Usar Docker e WSL2
 
 > 📄 O documento completo do desafio está disponível no arquivo `Desafio técnico Python.pdf` na raiz do projeto.
 
@@ -35,7 +35,7 @@ Este projeto foi desenvolvido como parte de um desafio técnico, com os seguinte
 - Download automático de imagens
 - Análise de texto robusta (contagem de frase, detecção de valores monetários)
 - Logs detalhados para depuração
-- Pronto para extensão (novas fontes de API, novos formatos de saída)
+- Pronto para extensão (novas fontes de dados, novos formatos de saída)
 
 ---
 
@@ -66,7 +66,7 @@ main.py
 - **domain/entities**: Entidades de domínio (modelos de dados)
 - **domain/services**: Regras de negócio puras
 - **domain/repositories**: Contratos de persistência
-- **infrastructure/clients**: Cliente da API de notícias
+- **infrastructure/clients**: Cliente de dados de notícias
 - **infrastructure/repositories**: Persistência em Excel e imagens
 
 ---
@@ -75,7 +75,7 @@ main.py
 
 ### SOLID
 - **S (Single Responsibility)**: Cada classe tem uma responsabilidade única
-  - `NewsAPIClient`: Responsável apenas pela comunicação com a API
+  - `NewsAPIClient`: Responsável apenas pela comunicação com a fonte de dados
   - `ExcelNewsRepository`: Responsável apenas pelo salvamento em Excel
   - `NewsAnalyzer`: Responsável apenas pela análise de texto das notícias
 
@@ -85,7 +85,7 @@ main.py
 
 - **L (Liskov Substitution)**: Implementações concretas substituem abstrações
   - `ExcelNewsRepository` implementa `NewsRepository` e pode ser usado em qualquer lugar que espere um repositório
-  - `NewsAPIClient` implementa a interface de cliente de API e pode ser substituído por outros clientes
+  - `NewsAPIClient` implementa a interface de cliente e pode ser substituído por outros clientes
 
 - **I (Interface Segregation)**: Interfaces enxutas e específicas
   - `NewsRepository` define apenas métodos essenciais: `save_news()` e `save_image()`
@@ -102,7 +102,7 @@ main.py
   - `infrastructure/`: Implementações concretas (ex: `NewsAPIClient`, `ExcelNewsRepository`)
 
 - **Independência de Frameworks**:
-  - Domínio não conhece detalhes de API ou Excel
+  - Domínio não conhece detalhes de fonte de dados ou Excel
   - Regras de negócio isoladas em `NewsAnalyzer`
   - Fácil trocar implementações sem afetar lógica
 
@@ -130,7 +130,7 @@ main.py
 - **Classes Coesas**:
   - `News`: Representa uma notícia com seus atributos
   - `NewsAnalyzer`: Análise de texto isolada
-  - `NewsAPIClient`: Comunicação com API específica
+  - `NewsAPIClient`: Comunicação com fonte de dados específica
 
 - **Encapsulamento**:
   - Métodos privados com `_` (ex: `_extract_article_data`)
@@ -148,7 +148,7 @@ class FetchNewsUseCase:
 class NewsAnalyzer:
     @staticmethod
     def analyze_news(title, description, search_phrase):
-        # Apenas análise de texto, sem lógica de API ou salvamento
+        # Apenas análise de texto, sem lógica de fonte de dados ou salvamento
 
 # Interface Segregada (ISP)
 class NewsRepository(ABC):
@@ -160,6 +160,36 @@ class NewsRepository(ABC):
     def save_image(self, url: str, filename: str):
         pass
 ```
+
+---
+
+## 🧩 REFramework no Projeto
+
+Este projeto utiliza o padrão REFramework (Robotic Enterprise Framework) para organizar o fluxo de execução de ponta a ponta, trazendo robustez, clareza e facilidade de manutenção. O REFramework está implementado na classe `NewsExtractorFramework` no arquivo `main.py`.
+
+### Como funciona no projeto?
+O fluxo é dividido em quatro fases principais:
+
+1. **Inicializacao**
+   - Carrega e valida as variáveis de ambiente
+   - Loga as configurações
+   - Prepara o ambiente para execução
+2. **Processamento**
+   - Executa a busca, análise e salvamento das notícias
+   - Realiza o download das imagens e gera o Excel
+   - Loga o progresso e o resultado
+3. **Tratamento de Excecoes**
+   - Captura e registra qualquer erro ocorrido durante a execução
+   - Permite implementar lógicas de recuperação ou retentativas
+4. **Finalizacao**
+   - Gera um relatório de execução (duração, quantidade de notícias, erros)
+   - Loga o encerramento do processo
+
+### Benefícios no contexto do projeto
+- **Organização**: Cada fase do processo é claramente separada, facilitando manutenção e evolução.
+- **Robustez**: Tratamento centralizado de exceções e geração de relatórios detalhados.
+- **Rastreabilidade**: Todos os passos e erros são registrados em log, facilitando auditoria e depuração.
+- **Escalabilidade**: Fácil adicionar novas etapas ou lógicas de recuperação sem comprometer o fluxo principal.
 
 ---
 
@@ -197,6 +227,7 @@ Quando você executa `docker-compose up`, a seguinte sequência ocorre:
 ### Volumes
 - `./images:/app/images`: Persiste imagens baixadas
 - `./news_results.xlsx:/app/news_results.xlsx`: Persiste resultados
+- `./logs:/app/logs`: Persiste logs de execução
 
 ---
 
@@ -211,10 +242,10 @@ O projeto usa variáveis de ambiente para configuração. Para começar:
 
 2. Edite o arquivo `.env` com suas configurações:
    ```env
-   # Chave da API (obtenha em: https://developer.newsapi.org)
+   # Chave de acesso (obtenha em: https://developer.newsapi.org)
    API_KEY=your_api_key_here
    
-   # URL da API
+   # URL base
    API_URL=https://api.newsapi.org/v2/everything
    
    # User-Agent para requisições HTTP
@@ -245,7 +276,7 @@ O projeto usa variáveis de ambiente para configuração. Para começar:
 3. **Importante**: 
    - Nunca comite o arquivo `.env` no Git
    - O arquivo `.env.example` serve como template
-   - Mantenha suas chaves de API seguras
+   - Mantenha suas chaves de acesso seguras
    - A variável `LOG_DIR` define onde os arquivos de log serão salvos (padrão: logs)
 
 ---
