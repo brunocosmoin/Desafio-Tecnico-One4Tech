@@ -20,7 +20,7 @@ Tudo isso de forma configurável via `.env` e com arquitetura robusta para manut
 ## 📚 Sobre o Desafio
 
 Este projeto foi desenvolvido como parte de um desafio técnico, com os seguintes requisitos:
-- Buscar notícias via API
+- Buscar notícias
 - Filtrar por frase, categoria e período
 - Salvar resultados em Excel
 - Baixar imagens das notícias
