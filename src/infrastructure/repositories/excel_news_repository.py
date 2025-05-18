@@ -6,18 +6,45 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from src.domain.entities.news import News
 from src.domain.repositories.news_repository import NewsRepository
+from src.infrastructure.logging.logger import logger
 
 class ExcelNewsRepository(NewsRepository):
     def __init__(self, excel_path: str, images_dir: str):
         self.excel_path = excel_path
         self.images_dir = images_dir
-        os.makedirs(images_dir, exist_ok=True)
+        if not os.path.exists(images_dir):
+            os.makedirs(images_dir)
+
+    def _download_image(self, image_url: str, image_filename: str) -> str:
+        """Download sincrono de imagem. Retorna o status do download."""
+        if not image_url:
+            return "URL não fornecida"
+
+        try:
+            logger.debug(f"Tentando baixar imagem de: {image_url}")
+            response = requests.get(image_url)
+            logger.debug(f"Status da resposta: {response.status_code}")
+            
+            if response.status_code == 200:
+                image_path = os.path.join(self.images_dir, image_filename)
+                with open(image_path, 'wb') as f:
+                    f.write(response.content)
+                logger.info(f"Imagem salva com sucesso em: {image_path}")
+                return image_filename
+            else:
+                error_msg = f"Erro ao baixar imagem: {response.status_code}"
+                logger.error(error_msg)
+                return error_msg
+        except Exception as e:
+            error_msg = f"Erro ao salvar imagem: {str(e)}"
+            logger.error(error_msg)
+            return error_msg
 
     def save_news(self, news_list: list[News]) -> None:
         # Criar nova planilha
         wb = Workbook()
         ws = wb.active
-        ws.title = "Notícias NYT"
+        ws.title = "Notícias"
 
         # Definir estilos
         header_font = Font(bold=True, size=12)
@@ -32,7 +59,9 @@ class ExcelNewsRepository(NewsRepository):
         )
 
         # Definir cabeçalhos
-        headers = ['Título', 'Data', 'Descrição', 'Imagem', 'Contagem da Frase', 'Contém Valor']
+        headers = ['Titulo', 'Data', 'Descricao', 'Imagem', 'Contagem da Frase', 'Contem Valor']
+
+        # Aplicar estilos aos cabeçalhos
         for col, header in enumerate(headers, 1):
             cell = ws.cell(row=1, column=col)
             cell.value = header
@@ -41,9 +70,19 @@ class ExcelNewsRepository(NewsRepository):
             cell.alignment = header_alignment
             cell.border = thin_border
 
+        # Download das imagens e preparação dos dados
+        processed_news = []
+        for news in news_list:
+            if news.image_url and news.image_filename:
+                image_status = self._download_image(news.image_url, news.image_filename)
+                news.image_filename = image_status
+            else:
+                news.image_filename = "Sem imagem"
+            processed_news.append(news)
+
         # Adicionar dados
-        for row, news in enumerate(news_list, 2):
-            # Título
+        for row, news in enumerate(processed_news, 2):
+            # Titulo
             cell = ws.cell(row=row, column=1)
             cell.value = news.title
             cell.alignment = cell_alignment
@@ -55,7 +94,7 @@ class ExcelNewsRepository(NewsRepository):
             cell.alignment = cell_alignment
             cell.border = thin_border
 
-            # Descrição
+            # Descricao
             cell = ws.cell(row=row, column=3)
             cell.value = news.description
             cell.alignment = cell_alignment
@@ -73,9 +112,9 @@ class ExcelNewsRepository(NewsRepository):
             cell.alignment = cell_alignment
             cell.border = thin_border
 
-            # Contém Valor
+            # Contem Valor
             cell = ws.cell(row=row, column=6)
-            cell.value = "Sim" if news.has_money else "Não"
+            cell.value = "Sim" if news.has_money else "Nao"
             cell.alignment = cell_alignment
             cell.border = thin_border
 
@@ -97,23 +136,8 @@ class ExcelNewsRepository(NewsRepository):
 
         # Salvar arquivo
         wb.save(self.excel_path)
-        print(f"Arquivo Excel salvo com sucesso em '{self.excel_path}'")
+        logger.info(f"Arquivo Excel salvo com sucesso em '{self.excel_path}'")
 
     def save_image(self, image_url: str, image_filename: str) -> None:
-        if not image_url:
-            return
-
-        try:
-            print(f"Tentando baixar imagem de: {image_url}")
-            response = requests.get(image_url)
-            print(f"Status da resposta: {response.status_code}")
-            
-            if response.status_code == 200:
-                image_path = os.path.join(self.images_dir, image_filename)
-                with open(image_path, 'wb') as f:
-                    f.write(response.content)
-                print(f"Imagem salva com sucesso em: {image_path}")
-            else:
-                print(f"Erro ao baixar imagem: {response.status_code}")
-        except Exception as e:
-            print(f"Erro ao salvar imagem: {str(e)}") 
+        """Metodo para compatibilidade com a interface."""
+        self._download_image(image_url, image_filename) 

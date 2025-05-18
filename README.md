@@ -1,13 +1,13 @@
-# NYTimes API Client
+# Extrator de Notícias
 
-Automação para extração, análise e armazenamento de notícias do New York Times via API oficial, seguindo princípios de SOLID, Clean Architecture e Object Calisthenics.
+Automação para extração, análise e armazenamento de notícias via API oficial, seguindo princípios de SOLID, Clean Architecture e Object Calisthenics.
 
 ---
 
 ## 📋 Sobre o Projeto
 
 Este projeto realiza:
-- Busca automatizada de notícias via API oficial do NYT
+- Busca automatizada de notícias via API oficial
 - Filtro por frase de pesquisa, categorias e período
 - Análise de ocorrência da frase e detecção de valores monetários
 - Download das imagens das notícias
@@ -20,7 +20,7 @@ Tudo isso de forma configurável via `.env` e com arquitetura robusta para manut
 ## 📚 Sobre o Desafio
 
 Este projeto foi desenvolvido como parte de um desafio técnico, com os seguintes requisitos:
-- Buscar notícias do NYT via API
+- Buscar notícias via API
 - Filtrar por frase, categoria e período
 - Salvar resultados em Excel
 - Baixar imagens das notícias
@@ -57,7 +57,7 @@ src/
 │   ├── repositories/
 │   │   └── excel_news_repository.py
 │   └── clients/
-│       └── nytimes_api_client.py
+│       └── news_api_client.py
 main.py
 ```
 
@@ -66,7 +66,7 @@ main.py
 - **domain/entities**: Entidades de domínio (modelos de dados)
 - **domain/services**: Regras de negócio puras
 - **domain/repositories**: Contratos de persistência
-- **infrastructure/clients**: Cliente da API do NYT
+- **infrastructure/clients**: Cliente da API de notícias
 - **infrastructure/repositories**: Persistência em Excel e imagens
 
 ---
@@ -75,7 +75,7 @@ main.py
 
 ### SOLID
 - **S (Single Responsibility)**: Cada classe tem uma responsabilidade única
-  - `NYTimesAPIClient`: Responsável apenas pela comunicação com a API do NYT
+  - `NewsAPIClient`: Responsável apenas pela comunicação com a API
   - `ExcelNewsRepository`: Responsável apenas pelo salvamento em Excel
   - `NewsAnalyzer`: Responsável apenas pela análise de texto das notícias
 
@@ -85,7 +85,7 @@ main.py
 
 - **L (Liskov Substitution)**: Implementações concretas substituem abstrações
   - `ExcelNewsRepository` implementa `NewsRepository` e pode ser usado em qualquer lugar que espere um repositório
-  - `NYTimesAPIClient` implementa a interface de cliente de API e pode ser substituído por outros clientes
+  - `NewsAPIClient` implementa a interface de cliente de API e pode ser substituído por outros clientes
 
 - **I (Interface Segregation)**: Interfaces enxutas e específicas
   - `NewsRepository` define apenas métodos essenciais: `save_news()` e `save_image()`
@@ -99,7 +99,7 @@ main.py
 - **Separação em Camadas**:
   - `domain/`: Entidades e regras de negócio (ex: `News`, `NewsAnalyzer`)
   - `application/`: Casos de uso (ex: `FetchNewsUseCase`)
-  - `infrastructure/`: Implementações concretas (ex: `NYTimesAPIClient`, `ExcelNewsRepository`)
+  - `infrastructure/`: Implementações concretas (ex: `NewsAPIClient`, `ExcelNewsRepository`)
 
 - **Independência de Frameworks**:
   - Domínio não conhece detalhes de API ou Excel
@@ -130,7 +130,7 @@ main.py
 - **Classes Coesas**:
   - `News`: Representa uma notícia com seus atributos
   - `NewsAnalyzer`: Análise de texto isolada
-  - `NYTimesAPIClient`: Comunicação com API específica
+  - `NewsAPIClient`: Comunicação com API específica
 
 - **Encapsulamento**:
   - Métodos privados com `_` (ex: `_extract_article_data`)
@@ -196,7 +196,7 @@ Quando você executa `docker-compose up`, a seguinte sequência ocorre:
 
 ### Volumes
 - `./images:/app/images`: Persiste imagens baixadas
-- `./nytimes_results.xlsx:/app/nytimes_results.xlsx`: Persiste resultados
+- `./news_results.xlsx:/app/news_results.xlsx`: Persiste resultados
 
 ---
 
@@ -211,23 +211,26 @@ O projeto usa variáveis de ambiente para configuração. Para começar:
 
 2. Edite o arquivo `.env` com suas configurações:
    ```env
-   # Chave da API do NYT (obtenha em: https://developer.nytimes.com)
-   NYT_API_KEY=your_api_key_here
+   # Chave da API (obtenha em: https://developer.newsapi.org)
+   API_KEY=your_api_key_here
    
-   # URL da API do NYT
-   NYT_API_URL=https://api.nytimes.com/svc/search/v2/articlesearch.json
+   # URL da API
+   API_URL=https://api.newsapi.org/v2/everything
    
    # User-Agent para requisições HTTP
    USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
    
-   # URL base para imagens do NYT
-   NYT_IMAGE_BASE_URL=https://static01.nyt.com
+   # URL base para imagens
+   IMAGE_BASE_URL=https://static.newsapi.org
    
    # Caminho do arquivo Excel de saída
-   EXCEL_PATH=nytimes_results.xlsx
+   EXCEL_PATH=news_results.xlsx
    
    # Pasta para salvar imagens
    IMAGES_DIR=images
+   
+   # Pasta para salvar logs (padrão: logs)
+   LOG_DIR=logs
    
    # Frase de busca
    SEARCH_PHRASE=your_search_phrase_here
@@ -243,6 +246,7 @@ O projeto usa variáveis de ambiente para configuração. Para começar:
    - Nunca comite o arquivo `.env` no Git
    - O arquivo `.env.example` serve como template
    - Mantenha suas chaves de API seguras
+   - A variável `LOG_DIR` define onde os arquivos de log serão salvos (padrão: logs)
 
 ---
 
@@ -288,6 +292,68 @@ SEARCH_PHRASE="climate" CATEGORIES="technology,science" docker-compose up
 # Busca por "sports" nos últimos 3 meses
 SEARCH_PHRASE="sports" MONTHS_TO_SEARCH=3 docker-compose up
 ```
+
+---
+
+## 🧪 Testes
+
+### Como executar os testes localmente
+
+Recomendamos o uso do **pytest** para rodar os testes, pois oferece uma saída mais amigável e recursos avançados.
+
+1. **Crie e ative um ambiente virtual:**
+
+   ```bash
+   python -m venv .venv
+   # Windows:
+   .venv\Scripts\activate
+   # Linux/Mac:
+   source .venv/bin/activate
+   ```
+
+2. **Instale as dependências:**
+
+   ```bash
+   pip install -r requirements.txt
+   pip install pytest
+   ```
+
+3. **Execute os testes:**
+
+   Para executar os testes e ver o resultado de cada teste individualmente, utilize o comando:
+
+   ```bash
+   pytest -v
+   ```
+
+   Para executar um arquivo de teste específico, por exemplo, o de integração:
+
+   ```bash
+   pytest -v tests/integration/test_news_fetch.py
+   ```
+
+   Exemplo de saída do comando:
+   ```
+   ================================================================================ test session starts ================================================================================
+   platform win32 -- Python 3.10.2, pytest-8.0.0, pluggy-1.6.0
+   cachedir: .pytest_cache
+   rootdir: C:\Users\Bruno Cosmo\Desafio Tecnico One4Tech
+   plugins: cov-4.1.0
+   collected 2 items                                                                                                                                                                    
+
+   tests/integration/test_news_fetch.py::TestNewsFetch::test_fetch_news_empty_categories PASSED                                                                                   [ 50%]
+   tests/integration/test_news_fetch.py::TestNewsFetch::test_fetch_news_success PASSED                                                                                            [100%]
+
+   ================================================================================= 2 passed in 3.32s ================================================================================= 
+   ```
+
+4. **Desative o ambiente virtual ao finalizar:**
+
+   ```bash
+   deactivate
+   ```
+
+---
 
 ## 👨‍ Autor
 Bruno Cosmo

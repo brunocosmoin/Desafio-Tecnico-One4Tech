@@ -3,6 +3,7 @@ from typing import Tuple
 import string
 import unicodedata
 from src.domain.entities.news import News
+from src.infrastructure.logging.logger import logger
 
 class NewsAnalyzer:
     @staticmethod
@@ -11,27 +12,27 @@ class NewsAnalyzer:
 
     @staticmethod
     def analyze_news(title: str, description: str, search_phrase: str) -> Tuple[int, bool]:
-        # Loga os textos originais para depuração
+        # Loga os textos originais para depuracao
         NewsAnalyzer._log_original_texts(title, description, search_phrase)
-        # Cria um tradutor para remover pontuação
+        # Cria um tradutor para remover pontuacao
         translator = str.maketrans('', '', string.punctuation)
-        # Limpa e normaliza os textos (minúsculas, sem acentos, sem pontuação)
+        # Limpa e normaliza os textos (minusculas, sem acentos, sem pontuacao)
         title_clean = NewsAnalyzer._clean_text(title, translator)
         description_clean = NewsAnalyzer._clean_text(description, translator)
         phrase_clean = NewsAnalyzer._clean_text(search_phrase, translator)
-        # Loga os textos processados para depuração
+        # Loga os textos processados para depuracao
         NewsAnalyzer._log_processed_texts(title_clean, description_clean, phrase_clean)
-        # Conta quantas vezes a frase de busca aparece no título e descrição
+        # Conta quantas vezes a frase de busca aparece no titulo e descricao
         search_count = NewsAnalyzer._count_phrase(title_clean, description_clean, phrase_clean)
-        print(f"[DEBUG] Contagem total para este artigo: {search_count}")
-        # Verifica se há menção a valores monetários usando regex
+        logger.debug(f"Contagem total para este artigo: {search_count}")
+        # Verifica se ha mencao a valores monetarios usando regex
         has_money = NewsAnalyzer._has_money(title, description)
         return search_count, has_money
 
     @staticmethod
     def _log_original_texts(title, description, search_phrase):
-        print(f"[DEBUG] Titulo original: {NewsAnalyzer.remove_accents(title)}")
-        print(f"[DEBUG] Frase de busca: {search_phrase}")
+        logger.debug(f"Titulo original: {NewsAnalyzer.remove_accents(title)}")
+        logger.debug(f"Frase de busca: {search_phrase}")
 
     @staticmethod
     def _clean_text(text, translator):
@@ -39,24 +40,24 @@ class NewsAnalyzer:
 
     @staticmethod
     def _log_processed_texts(title_clean, description_clean, phrase_clean):
-        print(f"[DEBUG] Titulo processado: {title_clean}")
-        print(f"[DEBUG] Descricao processada: {description_clean}")
-        print(f"[DEBUG] Frase de pesquisa processada: {phrase_clean}")
+        logger.debug(f"Titulo processado: {title_clean}")
+        logger.debug(f"Descricao processada: {description_clean}")
+        logger.debug(f"Frase de pesquisa processada: {phrase_clean}")
 
     @staticmethod
     def _count_phrase(title_clean, description_clean, phrase_clean):
         count_title = title_clean.count(phrase_clean)
         count_desc = description_clean.count(phrase_clean)
-        print(f"[DEBUG] Frase '{phrase_clean}' - no titulo: {count_title}, na descricao: {count_desc}")
+        logger.debug(f"Frase '{phrase_clean}' - no titulo: {count_title}, na descricao: {count_desc}")
         return count_title + count_desc
 
     @staticmethod
     def _has_money(title, description):
-        # Padrões para identificar valores monetários em diferentes formatos (ex: $ 10, US$ 100, 20 dólares)
+        # Padroes para identificar valores monetarios conforme especificado no desafio
         money_patterns = [
             r'\$\s*\d+[.,]\d+',  # $ 11,1
             r'US\$\s*\d+[.,]\d+',  # US$ 111.111,11
-            r'\d+\s*dólares?',  # 11 dólares
+            r'\d+\s*dolares?',  # 11 dolares
             r'\d+\s*dollars?'  # 11 dollars
         ]
         return any(

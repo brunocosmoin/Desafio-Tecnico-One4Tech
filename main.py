@@ -1,13 +1,13 @@
 """
 ###############################################################
-# DESAFIO TÉCNICO - Cliente de API do NYT                    #
+# DESAFIO TÉCNICO - Extrator de Notícias                     #
 #                                                           #
 # Este script segue as etapas do desafio:                   #
 # 1. Lê variáveis de configuração (.env):                   #
 #    - Frase de pesquisa                                    #
 #    - Categorias/seções de notícias                        #
 #    - Número de meses para buscar notícias                 #
-# 2. Realiza busca no NYT via API oficial                    #
+# 2. Realiza busca via API oficial                          #
 # 3. Filtra por categorias e período                        #
 # 4. Extrai título, data, descrição                         #
 # 5. Salva no Excel: título, data, descrição, nome da imagem#
@@ -25,23 +25,29 @@ import os
 from dotenv import load_dotenv
 from src.application.use_cases.fetch_news_use_case import FetchNewsUseCase
 from src.infrastructure.repositories.excel_news_repository import ExcelNewsRepository
+from src.infrastructure.logging.logger import logger
 
 def main():
     # 1. Carregar variáveis de ambiente (.env)
     load_dotenv()
-    # Log de todas as variáveis para depuração
-    print(f"[DEBUG MAIN] NYT_API_KEY: '{os.getenv('NYT_API_KEY')}'")
-    print(f"[DEBUG MAIN] NYT_API_URL: '{os.getenv('NYT_API_URL')}'")
-    print(f"[DEBUG MAIN] NYT_IMAGE_BASE_URL: '{os.getenv('NYT_IMAGE_BASE_URL')}'")
-    print(f"[DEBUG MAIN] EXCEL_PATH: '{os.getenv('EXCEL_PATH')}'")
-    print(f"[DEBUG MAIN] IMAGES_DIR: '{os.getenv('IMAGES_DIR')}'")
-    print(f"[DEBUG MAIN] SEARCH_PHRASE: '{os.getenv('SEARCH_PHRASE')}'")
-    print(f"[DEBUG MAIN] CATEGORIES: '{os.getenv('CATEGORIES')}'")
-    print(f"[DEBUG MAIN] MONTHS_TO_SEARCH: '{os.getenv('MONTHS_TO_SEARCH')}'")    
 
+    logger.info("\nDESAFIO TECNICO - Extrator de Noticias")
+    logger.info("Desenvolvido por: Bruno Cosmo\n")
+    
+    # Loga as configuracoes carregadas (exceto a API key por seguranca)
+    logger.info("Configuracoes carregadas:")
+    logger.info(f"API_URL: {os.getenv('API_URL')}")
+    logger.info(f"IMAGE_BASE_URL: {os.getenv('IMAGE_BASE_URL')}")
+    logger.info(f"EXCEL_PATH: {os.getenv('EXCEL_PATH')}")
+    logger.info(f"IMAGES_DIR: {os.getenv('IMAGES_DIR')}")
+    logger.info(f"LOG_DIR: {os.getenv('LOG_DIR')}")
+    logger.info(f"SEARCH_PHRASE: {os.getenv('SEARCH_PHRASE')}")
+    logger.info(f"CATEGORIES: {os.getenv('CATEGORIES')}")
+    logger.info(f"MONTHS_TO_SEARCH: {os.getenv('MONTHS_TO_SEARCH')}")
+    
     # 2. Configurar repositório para salvar Excel e imagens
     repository = ExcelNewsRepository(
-        excel_path=os.getenv('EXCEL_PATH', 'nytimes_results.xlsx'),
+        excel_path=os.getenv('EXCEL_PATH', 'news_results.xlsx'),
         images_dir=os.getenv('IMAGES_DIR', 'images')
     )
 
@@ -55,5 +61,5 @@ def main():
         months_to_search=int(os.getenv('MONTHS_TO_SEARCH', '2'))
     )
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main() 

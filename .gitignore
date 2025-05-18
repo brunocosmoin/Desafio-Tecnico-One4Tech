@@ -33,7 +33,7 @@ ENV/
 
 # Project specific
 images/
-nytimes_results.xlsx
+news_results.xlsx
 .env
 *.log
 
